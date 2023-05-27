@@ -66,40 +66,40 @@ jobs:
         with:
           name: cldr-apps-server
           path: tools/cldr-apps/target/cldr-apps.zip
- #     - name: Tag Production Commit
- #       uses: simpleactions/create-tag@d5c32a2d86b1f96142bbe1ebe8b3b62b0a0587ff
-  #      with:
-   #       sha: ${{ github.event.inputs.git-ref }}
-   #       tag: "${{ steps.tagname.outputs.tag }}"
-  #        message: "Deployed via GitHub by @${{ github.actor }}"
- #       env:
- #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  deploy:
-    name: Deploy to Production
-    needs:
-      - build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Download cldr-apps.zip
-      uses: actions/download-artifact@v3
-      with:
-        name: cldr-apps-server
-    - name: Deploy to st
-      # Deploys only on push to main.
-      # Does not deploy for PRs.
-      shell: bash
-      env:
-        # the RSA key for connecting
-        RSA_KEY_SURVEYTOOL: ${{ secrets.RSA_KEY_SURVEYTOOL }}
-        # the SSH port
-        SURVEYTOOL_PORT: ${{ secrets.SURVEYTOOL_PORT }}
-        # the SSH host
-        SURVEYTOOL_HOST: ${{ secrets.SURVEYTOOL_HOST }}
-        # the ~/.ssh/known_hosts line mentioning SMOKETEST_HOST
-        SURVEYTOOL_KNOWNHOSTS: ${{ secrets.SURVEYTOOL_KNOWNHOSTS }}
-        DEPLOY_SHA: ${{ github.event.inputs.git-ref }}
-        OVERRIDE: ${{ github.event.inputs.override }}
-      run: |
-        echo "${RSA_KEY_SURVEYTOOL}" > .key && chmod go= .key
-        echo "${SURVEYTOOL_KNOWNHOSTS}" > .knownhosts && chmod go= .knownhosts
-        ssh -C -o UserKnownHostsFile=.knownhosts -i .key -p ${SURVEYTOOL_PORT} surveytool@${SURVEYTOOL_HOST} bash /usr/local/bin/deploy-to-openliberty.sh < cldr-apps.zip ${DEPLOY_SHA} ${OVERRIDE}
+      - name: Tag Production Commit
+        uses: fatjyc/tagger-action@3813dc4e91671ceb3c261d93cce8b17ba9328f0b
+        with:
+          ref: ${{ github.event.inputs.git-ref }}
+          tag: "${{ steps.tagname.outputs.tag }}"
+          owner:  ${{ github.repository_owner }}
+          repo:  ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+  # deploy:
+  #   name: Deploy to Production
+  #   needs:
+  #     - build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Download cldr-apps.zip
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: cldr-apps-server
+  #   - name: Deploy to st
+  #     # Deploys only on push to main.
+  #     # Does not deploy for PRs.
+  #     shell: bash
+  #     env:
+  #       # the RSA key for connecting
+  #       RSA_KEY_SURVEYTOOL: ${{ secrets.RSA_KEY_SURVEYTOOL }}
+  #       # the SSH port
+  #       SURVEYTOOL_PORT: ${{ secrets.SURVEYTOOL_PORT }}
+  #       # the SSH host
+  #       SURVEYTOOL_HOST: ${{ secrets.SURVEYTOOL_HOST }}
+  #       # the ~/.ssh/known_hosts line mentioning SMOKETEST_HOST
+  #       SURVEYTOOL_KNOWNHOSTS: ${{ secrets.SURVEYTOOL_KNOWNHOSTS }}
+  #       DEPLOY_SHA: ${{ github.event.inputs.git-ref }}
+  #       OVERRIDE: ${{ github.event.inputs.override }}
+  #     run: |
+  #       echo "${RSA_KEY_SURVEYTOOL}" > .key && chmod go= .key
+  #       echo "${SURVEYTOOL_KNOWNHOSTS}" > .knownhosts && chmod go= .knownhosts
+  #       ssh -C -o UserKnownHostsFile=.knownhosts -i .key -p ${SURVEYTOOL_PORT} surveytool@${SURVEYTOOL_HOST} bash /usr/local/bin/deploy-to-openliberty.sh < cldr-apps.zip ${DEPLOY_SHA} ${OVERRIDE}
